@@ -24,7 +24,7 @@ def get_args():
     inputs.add_argument("--pixel-size", metavar="SIZE", dest = "pixel_size", type=float, default = None, action = "store",help="pixel size in microns; default is 1.0")
     
     outputs = parser.add_argument_group(title="Output", description="Path to output folder")
-    outputs.add_argument("-o", "--output", dest="output", action="store", required=True, help="Path to output ffolder")
+    outputs.add_argument("-o", "--output", dest="output", action="store", required=True, help="Path to output folder")
 
     arg = parser.parse_args()
 
