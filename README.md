@@ -6,7 +6,7 @@ Image preprocessing for different segmentation approaches
 
 The Docker container for this repository is currently at kbestak/seg_prep:0.1.4
 ```
-docker pull kbestak/seg_prep:0.1.5
+docker pull kbestak/seg_prep:0.1.6
 ```
 
 ## List of scripts and functionalities
@@ -41,7 +41,7 @@ Reshapes the image to only include selected channels. Possibility to apply Contr
 docker run \
   -v /path/to/folder/with/input:/input \
   -v /path/to/folder/with/output:/output \
-  kbestak/seg_prep:0.1.5 \
+  kbestak/seg_prep:0.1.6 \
   python3 /seg_prep/clahe_segmentation_prep.py \
   --input "/input/image.ome.tif" \
   --output "/output/image_out.ome.tif" \
@@ -68,7 +68,7 @@ module load devel/java_jdk/1.18
 module load system/singularity/3.9.2
 
 singularity run \
-  docker://kbestak/seg_prep:0.1.5 \
+  docker://kbestak/seg_prep:0.1.6 \
   python3 /seg_prep/clahe_segmentation_prep.py \
   --input "/path/to/input/image.ome.tif" \
   --output "/path/to/output/image_out.ome.tif" \
@@ -110,7 +110,7 @@ docker run \
   -v /path/to/folder/with/input:/input \
   -v /path/to/folder/with/roi:/roi \
   -v /path/to/output/folder:/output \
-  kbestak/seg_prep:0.1.5 \
+  kbestak/seg_prep:0.1.6 \
   python3 /seg_prep/crop_image_by_roi.py \
   --input "/input/image.ome.tif" \
   --output "/output" \
@@ -132,7 +132,7 @@ module load devel/java_jdk/1.18
 module load system/singularity/3.9.2
 
 singularity run \
-  docker://kbestak/seg_prep:0.1.5 \
+  docker://kbestak/seg_prep:0.1.6 \
   python3 /seg_prep/crop_image_by_roi.py \
   --input "/path/to/input/image.ome.tif" \
   --output "/path/to/output/folder" \
@@ -158,7 +158,7 @@ Channel naming based on channel name metadata will be implemented and toggleable
 docker run \
   -v /path/to/folder/with/input:/input \
   -v /path/to/output/folder:/output \
-  kbestak/seg_prep:0.1.5 \
+  kbestak/seg_prep:0.1.6 \
   python3 /seg_prep/unstack_image.py \
   --input "/input/image.ome.tif" \
   --output "/output" \
@@ -180,7 +180,7 @@ module load devel/java_jdk/1.18
 module load system/singularity/3.9.2
 
 singularity run \
-  docker://kbestak/seg_prep:0.1.5 \
+  docker://kbestak/seg_prep:0.1.6 \
   python3 /seg_prep/unstack_image.py \
   --input "/path/to/input/image.ome.tif" \
   --output "/path/to/output/folder" \
@@ -207,7 +207,7 @@ In this example image1.ome.tif is a 2-channel image, and image2-ome.tif is a sin
 docker run \
   -v /path/to/folder/with/inputs:/input \
   -v /path/to/output:/output \
-  kbestak/seg_prep:0.1.5 \
+  kbestak/seg_prep:0.1.6 \
   python3 /seg_prep/stack_channels.py \
   --input "/input/image1.ome.tif" "/input/image2.ome.tif" \
   --output "/output/image_out.ome.tif" \
@@ -228,7 +228,7 @@ module load devel/java_jdk/1.18
 module load system/singularity/3.9.2
 
 singularity run \
-  docker://kbestak/seg_prep:0.1.5 \
+  docker://kbestak/seg_prep:0.1.6 \
   python3 /seg_prep/stack_channels.py \
   --input "/path/to/folder/with/inputs/image1.ome.tif" "/path/to/folder/with/inputs/image2.ome.tif" \
   --output "/output/image_out.ome.tif" \
@@ -257,7 +257,7 @@ docker run \
   -v /path/to/input:/input \
   -v /path/to/mask:/input \
   -v /path/to/output:/output \
-  kbestak/seg_prep:0.1.5 \
+  kbestak/seg_prep:0.1.6 \
   python3 /seg_prep/mask_out.py \
   --input "/input/image.ome.tif" \
   --mask "/input/mask.tif" \
@@ -279,12 +279,67 @@ module load devel/java_jdk/1.18
 module load system/singularity/3.9.2
 
 singularity run \
-  docker://kbestak/seg_prep:0.1.5 \
+  docker://kbestak/seg_prep:0.1.6 \
   python3 /seg_prep/mask_out.py \
   --input "/path/to/folder/with/inputs/image.ome.tif" \
   --mask "/path/to/folder/with/mask/mask.tif" \
   --output "/output/output.ome.tif" \
+  --pixel-size 0.23
+```
+
+
+### max_projection.py
+
+Takes a multi-channel `tif` image and applies max projection on nuclear and membrane channels. Outputs a 2-channel image with the nuclear max projections, and membrane max projections with adjustable order.
+
+#### Arguments:
+
+* `--input` (required), paths to input image
+* `--output` (required), path to output image
+* `--nuclear-channels` (required), channel indices specifying the nuclear channels on which max projection should be applied
+* `--membrane-channels` (required), channel indices specifying the membrane channels on which max projection should be applied
+* `--first` (default `nuclear`), write `--first membrane` if the membrane channel should be the first channel in the output image
+* `--pixel-size`, add pixel size to metadata
+* `--pyramid` (default `True`), should the output be pyramidal
+* `--tile-size` (default `1024`), tile size for pyramidal outputs
+
+#### Example command with Docker:
+
+In this example image.ome.tif is a 20-channel image
+```
+docker run \
+  -v /path/to/input:/input \
+  -v /path/to/output:/output \
+  kbestak/seg_prep:0.1.6 \
+  python3 /seg_prep/max_projection.py \
+  --input "/input/image.ome.tif" \
+  --nuclear-channels 0 \
+  --membrane-channels 16 17 19 \
   --pixel-size 0.23 \
+  --output "/output/output.ome.tif"
+```
+
+#### Example command with Singularity on Helix:
+
+```
+#!/bin/sh
+#SBATCH --job-name="demo"
+#SBATCH --partition=single
+#SBATCH --ntasks=1
+#SBATCH --time=01:00:00
+#SBATCH --mem=16gb
+
+module load devel/java_jdk/1.18
+module load system/singularity/3.9.2
+
+singularity run \
+  docker://kbestak/seg_prep:0.1.6 \
+  python3 /seg_prep/max_projection.py \
+  --input "/path/to/folder/with/inputs/image.ome.tif" \
+  --output "/output/output.ome.tif" \
+  --pixel-size 0.23 \
+  --nuclear-channels 0 \
+  --membrane-channels 16 17 19
 ```
 
 
