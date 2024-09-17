@@ -1,12 +1,12 @@
-from __future__ import print_function, division
-import argparse
-import tifffile
-from aicsimageio import aics_image as AI
-import pandas as pd
 from os.path import abspath
 from argparse import ArgumentParser as AP
+import argparse
+import numpy as np
+import tifffile
+import zarr
+import dask.array
+import pandas as pd
 import time
-
 
 
 # arg parser
@@ -35,11 +35,6 @@ def get_args():
 
     return arg
 
-# NaN values return True for the statement below in this version of Python. Did not use math.isnan() since the values
-# are strings if present
-def isNaN(x):
-    return x != x
-
 def write_to_tif(image, output, pixel_size):
     with tifffile.TiffWriter(output, ome=True, bigtiff=False) as tiff:
         tiff.write(
@@ -50,16 +45,17 @@ def write_to_tif(image, output, pixel_size):
         )
 
 def main(args):
-    img_raw = AI.AICSImage(args.input)
-    img = img_raw.get_image_dask_data("CYX")
+    store = tifffile.imread(input, aszarr=True)
+    cache = zarr.LRUStoreCache(store, max_size=2**30)
+    zobj = zarr.open(cache, mode='r')
+    data = dask.array.from_zarr(zobj[0])
 
-    img = img.astype("uint16")
     # roi dataframe needs to have columns specifying y_min, y_max, x_min, x_max, and roi_name
     roi = pd.read_csv(args.roi)
 
     for index in range(roi.shape[0]):
         row = roi.iloc[index,:]
-        crop = img[:, int(row.y_min):int(row.y_max), int(row.x_min): int(row.x_max)]
+        crop = data[:, int(row.y_min):int(row.y_max), int(row.x_min): int(row.x_max)]
         print(f"Cropped roi {row.roi_name}, shape: {crop.shape}, YX coordinates: {row.y_min}:{row.y_max}, {row.x_min}:{row.x_max}")
         write_to_tif(crop, output=f"{args.output}/crop_{row.roi_name}.tif", pixel_size=args.pixel_size)       
     
