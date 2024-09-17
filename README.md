@@ -4,7 +4,7 @@ Image preprocessing for different segmentation approaches
 
 ## Docker container
 
-The Docker container for this repository is currently at kbestak/seg_prep:0.1.4
+The Docker container for this repository is currently at ghcr.io/schapirolabor/segmentation_prep:main
 ```
 docker pull kbestak/seg_prep:0.1.6
 ```
