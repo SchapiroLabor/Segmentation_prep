@@ -56,7 +56,6 @@ def get_args():
     arg.nuclear = [int(channel) for channel in arg.nuclear]
     arg.membrane = [int(channel) for channel in arg.membrane]
     arg.pyramid = bool(arg.pyramid)
-    arg.pixel_size = float(arg.pixel_size)
 
     return arg
 
@@ -145,9 +144,13 @@ def main(args):
                 pixel_size = img_raw.metadata.images[0].pixels.physical_size_x
             else:
                 pixel_size = 1.0
+                print("WARNING: No pixel size specified in metadata. Using default 1.0 micron.")
         except:
             # If no pixel size specified anywhere, use default 1.0
             pixel_size = 1.0
+            print("WARNING: No pixel size specified in metadata. Using default 1.0 micron.")
+
+    pixel_size = float(pixel_size)
     
     # if pyramid, construct pyramid
     if (args.pyramid == True) and (int(args.tile_size)<=max(output_img[0].shape)):
